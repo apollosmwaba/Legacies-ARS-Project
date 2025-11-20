@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Legacies ARS | Premium Academic Research Support</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0d2b5c;
+      --secondary: #c9a04a;
+      --accent: #e8c37e;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --gray: #6c757d;
+      --shadow: 0 4px 12px rgba(0,0,0,0.08);
+      --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      color: var(--dark);
+      background-color: #fafbff;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+
+    /* ===== Animations ===== */
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeInLeft { from { opacity: 0; transform: translateX(-50px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes fadeInRight { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes fadeInScale { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+    
+    .fade-in { animation: fadeInUp 1s ease-out forwards; opacity: 0; }
+    .fade-in-left { animation: fadeInLeft 1s ease-out forwards; opacity: 0; }
+    .fade-in-right { animation: fadeInRight 1s ease-out forwards; opacity: 0; }
+    .fade-in-scale { animation: fadeInScale 1s ease-out forwards; opacity: 0; }
+    
+    .stagger-1 { animation-delay: 0.2s; }
+    .stagger-2 { animation-delay: 0.4s; }
+    .stagger-3 { animation-delay: 0.6s; }
+    .stagger-4 { animation-delay: 0.8s; }
+    .stagger-5 { animation-delay: 1s; }
+    .stagger-6 { animation-delay: 1.2s; }
+    
+    /* Scroll animations */
+    .animate-on-scroll {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.8s ease-out;
+    }
+    .animate-on-scroll.animated {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(201, 160, 74, 0.4); }
+      70% { box-shadow: 0 0 0 12px rgba(201, 160, 74, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(201, 160, 74, 0); }
+    }
+
+    /* ===== Preloader ===== */
+    #preloader {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: linear-gradient(135deg, var(--primary), #1a3f70);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.8s ease, visibility 0.8s ease;
+    }
+    .loader {
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(255,255,255,0.2);
+      border-top: 4px solid var(--secondary);
+      border-radius: 50%;
+      animation: spin 1.2s linear infinite;
+      margin-bottom: 1.5rem;
+    }
+    .loader-text {
+      color: white;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      opacity: 0;
+      animation: fadeInText 0.8s ease 0.5s forwards;
+    }
+    .loader-subtext {
+      color: rgba(255,255,255,0.8);
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      opacity: 0;
+      animation: fadeInText 0.8s ease 1s forwards;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeInText { to { opacity: 1; } }
+
+    /* Hero image carousel */
+    .hero-bg-slider {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 110%;
+      z-index: -1;
+      transform: translateZ(0);
+    }
+    .hero-slide {
+      position: absolute;
+      width: 100%; height: 100%;
+      opacity: 0;
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      transition: opacity 1.5s ease-in-out;
+      filter: brightness(0.7);
+    }
+    .hero-slide.active {
+      opacity: 1;
+    }
+    .hero-slide::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: linear-gradient(45deg, rgba(13, 43, 92, 0.3), rgba(26, 63, 112, 0.2));
+    }
+
+    /* Page routing */
+    .page { display: none; padding-top: 0; }
+    .page.active { display: block; }
+    .page:not(#home) { padding-top: 6rem; }
+
+    /* Header / Hero */
+    header {
+      background: rgba(13, 43, 92, 0.95);
+      backdrop-filter: blur(10px);
+      color: white;
+      padding: 1.5rem 0;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 100;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+    }
+    header.scrolled {
+      background: rgba(13, 43, 92, 0.98);
+      padding: 1rem 0;
+    }
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: white;
+    }
+    .logo span { color: var(--secondary); }
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin-left: 1.5rem;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+    nav a:hover {
+      color: var(--secondary);
+    }
+
+    .hero {
+      background: rgba(13, 43, 92, 0.7);
+      color: white;
+      padding: 0;
+      text-align: center;
+      position: relative;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero-content {
+      z-index: 2;
+      position: relative;
+      max-width: 800px;
+      padding: 2rem;
+    }
+    .hero h1 {
+      font-size: 3.5rem;
+      margin-bottom: 1.5rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      line-height: 1.1;
+    }
+    .hero p {
+      font-size: 1.4rem;
+      margin: 0 auto 3rem;
+      opacity: 0.95;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+      line-height: 1.5;
+    }
+    .btn {
+      display: inline-block;
+      background: var(--secondary);
+      color: var(--primary);
+      font-weight: 600;
+      padding: 1rem 2.5rem;
+      border-radius: 50px;
+      text-decoration: none;
+      transition: var(--transition);
+      box-shadow: 0 4px 15px rgba(201, 160, 74, 0.3);
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 1.1rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+    .btn:hover::before {
+      left: 100%;
+    }
+    .btn:hover {
+      background: #b28e3d;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(201, 160, 74, 0.4);
+    }
+
+    /* Sections */
+    section {
+      padding: 5rem 0;
+    }
+    .section-title {
+      text-align: center;
+      margin-bottom: 3.5rem;
+      position: relative;
+    }
+    .section-title h2 {
+      font-size: 2.25rem;
+      color: var(--primary);
+    }
+    .section-title::after {
+      content: '';
+      display: block;
+      width: 80px;
+      height: 4px;
+      background: var(--secondary);
+      margin: 1rem auto;
+      border-radius: 2px;
+    }
+
+    /* Services */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+    .service-card {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .service-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+    }
+    .service-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 6px; height: 100%;
+      background: var(--secondary);
+      transform: scaleY(0);
+      transform-origin: top;
+      transition: var(--transition);
+    }
+    .service-card:hover::before {
+      transform: scaleY(1);
+    }
+    .service-card h3 {
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+    .service-card p {
+      color: var(--gray);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    /* Pricing */
+    .pricing-toggle {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .toggle-btn {
+      background: #e9ecef;
+      color: var(--gray);
+      border: none;
+      padding: 0.5rem 1.5rem;
+      border-radius: 30px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+    .toggle-btn.active {
+      background: var(--secondary);
+      color: white;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+    .price-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+    }
+    .price-card.popular {
+      transform: scale(1.03);
+      border: 2px solid var(--secondary);
+    }
+    .price-header {
+      background: var(--primary);
+      color: white;
+      padding: 1.5rem;
+      text-align: center;
+    }
+    .price-header h3 { font-size: 1.5rem; }
+    .price-amount {
+      font-size: 2.25rem;
+      font-weight: 700;
+      margin: 0.5rem 0;
+    }
+    .price-list {
+      padding: 1.5rem;
+      list-style: none;
+    }
+    .price-list li {
+      padding: 0.5rem 0;
+      border-bottom: 1px dashed #eee;
+    }
+    .price-list li:last-child { border: none; }
+
+    /* Contact */
+    .contact-form {
+      max-width: 700px;
+      margin: 0 auto;
+      background: white;
+      padding: 2.5rem;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+    }
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--dark);
+    }
+    .form-control {
+      width: 100%;
+      padding: 0.85rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--secondary);
+      box-shadow: 0 0 0 3px rgba(201, 160, 74, 0.2);
+    }
+    textarea.form-control { min-height: 150px; resize: vertical; }
+
+    /* Page-specific styling */
+    .page-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .page-header h1 {
+      font-size: 2.5rem;
+      color: var(--primary);
+    }
+    .team-grid, .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+    }
+    .team-card, .product-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+    }
+    .team-card:hover, .product-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    .team-img, .product-img {
+      height: 200px;
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    .card-body {
+      padding: 1.5rem;
+    }
+    .card-body h3 {
+      font-size: 1.3rem;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Footer */
+    footer {
+      background: var(--dark);
+      color: #adb5bd;
+      padding: 3rem 0 2rem;
+      text-align: center;
+    }
+    .footer-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .social-links { display: flex; gap: 1rem; margin-top: 1rem; }
+    .social-links a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px; height: 40px;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border-radius: 50%;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+    .social-links a:hover {
+      background: var(--secondary);
+      transform: translateY(-3px);
+    }
+    .branding {
+      font-size: 0.9rem;
+      margin-top: 1.5rem;
+      opacity: 0.7;
+    }
+
+    /* CART SIDEBAR */
+    #cartSidebar {
+      position: fixed; top: 0; right: -400px; width: 380px; height: 100vh;
+      background: white; box-shadow: -4px 0 20px rgba(0,0,0,0.1);
+      z-index: 1000; transition: right 0.4s ease;
+      display: flex; flex-direction: column;
+    }
+    #openCartBtn {
+      position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px;
+      background: var(--secondary); color: var(--primary); border: none; border-radius: 50%;
+      font-weight: bold; font-size: 1.2rem; box-shadow: 0 4px 12px rgba(201,160,74,0.4);
+      display: flex; align-items: center; justify-content: center; z-index: 999;
+      cursor: pointer;
+    }
+    #cartBadge {
+      position: absolute; top: -4px; right: -4px; background: var(--primary);
+      color: white; width: 22px; height: 22px; border-radius: 50%;
+      font-size: 0.7rem; display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Scroll Indicator */
+    .scroll-indicator {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      color: rgba(255,255,255,0.8);
+      font-size: 0.9rem;
+    }
+    .scroll-arrow {
+      font-size: 1.5rem;
+      animation: bounce 2s infinite;
+      margin-bottom: 0.5rem;
+    }
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-10px); }
+      60% { transform: translateY(-5px); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2.5rem; }
+      .hero p { font-size: 1.2rem; }
+      .hero { padding: 2rem 1rem; }
+      .hero-slide { background-attachment: scroll; }
+      section { padding: 3rem 0; }
+      nav a { margin-left: 1rem; font-size: 0.9rem; }
+      .price-card { font-size: 0.95rem; }
+      .navbar { flex-direction: column; gap: 1rem; }
+      .logo { font-size: 1.5rem; }
+      header { padding: 1rem 0; }
+      header.scrolled { padding: 0.8rem 0; }
+      .scroll-indicator { bottom: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ✅ Preloader -->
+  <div id="preloader">
+    <div class="loader"></div>
+    <div class="loader-text">Legacies ARS</div>
+    <div class="loader-subtext">Premium Academic Research Support</div>
+  </div>
+
+  <!-- ✅ Header -->
+  <header>
+    <div class="container navbar">
+      <div class="logo">Legacies <span>ARS</span></div>
+      <nav>
+        <a href="#home" class="nav-link" data-page="home">Home</a>
+        <a href="#about" class="nav-link" data-page="about">About</a>
+        <a href="#products" class="nav-link" data-page="products">Products</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ✅ HOME PAGE -->
+  <div id="home" class="page active">
+    <!-- Hero with background slider -->
+    <section class="hero">
+      <div class="hero-bg-slider">
+        <div class="hero-slide active" style="background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80');"></div>
+        <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1503676260748-1c4341f6b747?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80');"></div>
+        <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80');"></div>
+        <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80');"></div>
+      </div>
+      <div class="hero-content">
+        <h1 class="fade-in">Helping Students Succeed<br>With Quality, Clarity & Confidence</h1>
+        <p class="fade-in stagger-1">Premium academic research support—from proposal to defense—tailored for Zambian & African scholars.</p>
+        <a href="#contact" class="btn pulse fade-in stagger-2">Get Started Today</a>
+        <div class="scroll-indicator fade-in stagger-3">
+          <div class="scroll-arrow">↓</div>
+          <span>Scroll to explore</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Services -->
+    <section id="services">
+      <div class="container">
+        <div class="section-title fade-in">
+          <h2>Our Academic Support Services</h2>
+          <p>Comprehensive, end-to-end research & writing assistance</p>
+        </div>
+        <div class="services-grid">
+          <div class="service-card animate-on-scroll">
+            <h3>1. Research Support</h3>
+            <p>Topic selection & refinement • Research gap identification • Problem statement development • Objectives & research questions formulation • Full proposal writing (Chapters 1–3) • Proposal review & improvement</p>
+          </div>
+          <div class="service-card animate-on-scroll">
+            <h3>2. Literature Review Services</h3>
+            <p>Literature review writing (all levels) • Article search & summary • Conceptual/theoretical framework writing • Identification of key themes & trends</p>
+          </div>
+          <div class="service-card animate-on-scroll">
+            <h3>3. Data Collection Tools</h3>
+            <p>Questionnaire development • Interview guide creation • Focus group discussion tools • Sampling guidance</p>
+          </div>
+          <div class="service-card animate-on-scroll">
+            <h3>4. Data Analysis Assistance</h3>
+            <p>Excel-based analysis (tables, graphs, interpretation) • SPSS output interpretation • Writing results & discussion sections • Choose depending on your skill level; we can refine anytime</p>
+          </div>
+          <div class="service-card animate-on-scroll">
+            <h3>5. Full Research Report Support</h3>
+            <p>Writing & editing Chapters 1–5 • Project review and improvement • Findings, conclusions & recommendations • Report structuring and organization</p>
+          </div>
+          <div class="service-card animate-on-scroll">
+            <h3>6. Editing & Proofreading</h3>
+            <p>Grammar correction • Sentence improvement • Logical flow & clarity • Cohesion & coherence review</p>
+          </div>
+          <div class="service-card animate-on-scroll">
+            <h3>7. Plagiarism & Academic Integrity</h3>
+            <p>Plagiarism check (Turnitin) • Plagiarism reduction & rewriting • Proper paraphrasing & citation • Reference list cleanup</p>
+          </div>
+          <div class="service-card animate-on-scroll">
+            <h3>8. Formatting Services</h3>
+            <p>APA, Harvard, MLA, Chicago • Referencing & in-text citation • Table of contents • Numbering, alignment, layout</p>
+          </div>
+          <div class="service-card animate-on-scroll">
+            <h3>9. Presentation Preparation</h3>
+            <p>Proposal defense slides • Dissertation defense slides • Presentation script/talking points • Academic poster design</p>
+          </div>
+          <div class="service-card animate-on-scroll">
+            <h3>10. Student Career Support</h3>
+            <p>CV writing & redesign • Personal statements • Motivation letters (jobs, scholarships) • Internship & application guidance</p>
+          </div>
+          <div class="service-card animate-on-scroll">
+            <h3>11. Training & Coaching</h3>
+            <p>Proposal writing coaching • How to write a literature review • How to prepare a questionnaire • One-on-one academic writing guidance</p>
+          </div>
+          <div class="service-card animate-on-scroll">
+            <h3>12. Additional Student Services</h3>
+            <p>Assignment writing support • Document review for clarity • PowerPoint design • Academic portfolio preparation</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" style="background: #f1f5f9;">
+      <div class="container">
+        <div class="section-title fade-in">
+          <h2>Affordable & Transparent Pricing (2025)</h2>
+        </div>
+
+        <div class="pricing-toggle">
+          <button class="toggle-btn active" data-type="individual">Individual Services</button>
+          <button class="toggle-btn" data-type="packages">Premium Packages</button>
+        </div>
+
+        <div class="pricing-grid" id="pricingContent">
+          <div class="price-card">
+            <div class="price-header">
+              <h3>1. Topic & Proposal Support</h3>
+            </div>
+            <ul class="price-list">
+              <li>• Topic Selection + Research Gap Identification: <strong>K80 – K120</strong></li>
+              <li>• Full Proposal Writing (Chapters 1–3): <strong>K250 – K400</strong></li>
+              <li>• Proposal Review & Improvement: <strong>K100 – K180</strong></li>
+              <li>• Problem Statement + Objectives + Questions (Bundle): <strong>K70 – K120</strong></li>
+            </ul>
+          </div>
+          <div class="price-card">
+            <div class="price-header">
+              <h3>2. Literature Review</h3>
+            </div>
+            <ul class="price-list">
+               <li>• Literature Review Writing (8–15 pages): <strong>K200 – K350</strong></li>
+              <li>• Article Search & Compilation (10–20 articles): <strong>K60 – K120</strong></li>
+            </ul>
+          </div>
+          <div class="price-card">
+            <div class="price-header">
+              <h3>3. Data Collection Tools</h3>
+            </div>
+            <ul class="price-list">
+              <li>• Questionnaire Design: <strong>K80 – K150</strong></li>
+              <li>• Interview Guide Development: <strong>K50 – K90</strong></li>
+            </ul>
+          </div>
+          <div class="price-card">
+            <div class="price-header">
+              <h3>4. Data Analysis</h3>
+            </div>
+            <ul class="price-list">
+              <li>• Basic Excel Analysis (tables + graphs + interpretation): <strong>K150 – K250</strong></li>
+              <li>• SPSS Basic Output Interpretation: <strong>K120 – K200</strong></li>
+              <li><small>(Choose based on your skill level; we can adjust later.)</small></li>
+            </ul>
+          </div>
+          <div class="price-card">
+            <div class="price-header">
+              <h3>5. Full Research Report (Ch 1–5)</h3>
+            </div>
+            <ul class="price-list">
+              <li>• Full Writing (Student provides data): <strong>K450 – K700</strong></li>
+              <li>• Full Review & Editing (Student already wrote draft): <strong>K200 – K350</strong></li>
+            </ul>
+          </div>
+          <div class="price-card">
+            <div class="price-header">
+              <h3>6. Editing & Academic Cleanup</h3>
+            </div>
+            <ul class="price-list">
+              <li>• Editing + Proofreading (per full project): <strong>K150 – K250</strong></li>
+              <li>• Grammar correction + paragraph improvement: <strong>K50 – K120</strong></li>
+            </ul>
+          </div>
+          <div class="price-card">
+            <div class="price-header">
+              <h3>7. Plagiarism Support</h3>
+            </div>
+            <ul class="price-list">
+              <li>• Turnitin Check Only: <strong>K30 – K50</strong></li>
+              <li>• Turnitin Reduction (Rewrite + Improve): <strong>K80 – K150</strong></li>
+            </ul>
+          </div>
+          <div class="price-card">
+            <div class="price-header">
+              <h3>8. Formatting Services</h3>
+            </div>
+            <ul class="price-list">
+              <li>• APA / Harvard / MLA / Chicago Formatting: <strong>K50 – K80</strong></li>
+              <li>• Table of Contents + Numbering + References Cleanup: <strong>K40 – K70</strong></li>
+            </ul>
+          </div>
+          <div class="price-card">
+            <div class="price-header">
+              <h3>9. Presentation Preparation</h3>
+            </div>
+            <ul class="price-list">
+              <li>• Proposal Defense Slides (10–15 slides): <strong>K80 – K120</strong></li>
+              <li>• Dissertation Defense Slides (15–20 slides): <strong>K100 – K150</strong></li>
+              <li>• Presentation Script / Talking Points: <strong>K50 – K80</strong></li>
+            </ul>
+          </div>
+          <div class="price-card">
+            <div class="price-header">
+              <h3>10. Training & Tutorials</h3>
+            </div>
+            <ul class="price-list">
+              <li>• How to Write a Proposal (1 Hour Session): <strong>K50</strong></li>
+              <li>• How to Identify Research Gaps: <strong>K40</strong></li>
+              <li>• How to Do a Literature Review: <strong>K40</strong></li>
+            </ul>
+          </div>
+          <div class="price-card">
+            <div class="price-header">
+              <h3>11. Extra Student Services</h3>
+            </div>
+            <ul class="price-list">
+              <li>• CV Writing: <strong>K50 – K100</strong></li>
+              <li>• Motivation Letter / Personal Statement: <strong>K40 – K80</strong></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact">
+      <div class="container">
+        <div class="section-title fade-in">
+          <h2>Get in Touch</h2>
+          <p>Let’s build your academic success story together.</p>
+        </div>
+        <div class="contact-form fade-in">
+          <form id="contactForm">
+            <div class="form-group">
+              <label for="name">Full Name</label>
+              <input type="text" id="name" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="contact">Email / WhatsApp</label>
+              <input type="text" id="contact" class="form-control" placeholder="+260979064957" required>
+            </div>
+            <div class="form-group">
+              <label for="service">Service of Interest</label>
+              <select id="service" class="form-control">
+                <option value="">— Select —</option>
+                <option>Proposal Writing</option>
+                <option>Literature Review</option>
+                <option>Questionnaire Design</option>
+                <option>Data Analysis</option>
+                <option>Full Report Support</option>
+                <option>Editing & Proofreading</option>
+                <option>Turnitin Support</option>
+                <option>Defense Slides</option>
+                <option>CV / Personal Statement</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="message">Message (e.g., deadline, word count)</label>
+              <textarea id="message" class="form-control" required></textarea>
+            </div>
+            <button type="submit" class="btn">Send Inquiry →</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div class="container">
+        <div class="footer-content">
+          <h3 style="color: white;">Legacies Academic Research Services</h3>
+          <p>+260 979 064 957 | +260 965 914 005<br>
+          Legaciesacademicresearch@gmail.com</p>
+          <div class="social-links">
+            <a href="https://wa.me/260979064957" target="_blank" title="WhatsApp">💬</a>
+            <a href="mailto:Legaciesacademicresearch@gmail.com" title="Email">✉️</a>
+          </div>
+          <div class="branding">
+            Designed by Apollos Mwaba © 2025<br>
+            Empowering scholars, one project at a time.
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ✅ ABOUT PAGE -->
+  <div id="about" class="page">
+    <div class="container">
+      <div class="page-header">
+        <h1>About Legacies ARS</h1>
+        <p>Who we are, what we stand for</p>
+      </div>
+      <div class="team-grid">
+        <div class="team-card">
+          <div class="team-img">Founder & Lead Consultant</div>
+          <div class="card-body">
+            <h3>Mr Peter Malichi</h3>
+            <p> Passionate about ethical, student-led research.</p>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="team-img">Senior Academic Editor</div>
+          <div class="card-body">
+            <h3>Mr Issac Bwalya </h3>
+            <p> Academic tone refinement.</p>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="team-img">Data & Stats Specialist</div>
+          <div class="card-body">
+            <h3>Mr. Somone </h3>
+            <p>SPSS & Excel trainer. Helps students turn raw data into meaningful, publishable results.</p>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top: 3rem; text-align: center;">
+        <a href="#home" class="btn">← Back to Home</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ PRODUCTS PAGE -->
+  <div id="products" class="page">
+    <div class="container">
+      <div class="page-header">
+        <h1>📋 Academic Services Inquir/h1>>
+        <p>Add services to inquiry list → Contact  pricing</p>
+      </div>
+      <div class="products-grid" id="productsGrid">
+        <!-- Populated by JS -->
+      </div>
+      <div style="text-align: center; margin-top: 2rem;">
+        <a href="#home" class="btn" style="background: #6c757d;">← Back to Home</a>
+      </div>
+    </div>
+
+    <!-- CART SIDEBAR -->
+    <div id="cartSidebar">
+      <div style="padding: 1.5rem; background: var(--primary); color: white; display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin: 0; font-size: 1.4rem;">� Your Inquiry</h3>
+        <button id="closeCartBtn" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">&times;</button>
+      </div>
+      <div id="cartItemsList" style="flex: 1; overflow-y: auto; padding: 1.25rem;"></div>
+      <div style="padding: 1.25rem; background: #f8f9fa; border-top: 1px solid #eee; text-align: center;">
+        <p style="margin: 0; color: var(--gray); font-size: 0.9rem;">Contact us for pricing and availability</p>
+      </div>
+      <button id="checkoutBtn" class="btn-checkout" style="border-radius: 0; padding: 1.1rem; font-size: 1.15rem; background: var(--secondary); color: white; border: none; cursor: pointer;" disabled>💬 Send Inquiry via WhatsApp</button>
+    </div>
+
+    <button id="openCartBtn">
+      <span id="cartBadge">0</span> �
+    </button>
+  </div>
+
+  <script>
+    // ===== Preloader =====
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.getElementById('preloader').style.opacity = '0';
+        document.getElementById('preloader').style.visibility = 'hidden';
+        setTimeout(() => {
+          document.getElementById('preloader').style.display = 'none';
+          // Trigger initial animations
+          document.querySelectorAll('.fade-in').forEach(el => {
+            el.style.animationPlayState = 'running';
+          });
+        }, 800);
+      }, 1500);
+    });
+
+    // ===== Header Scroll Effect =====
+    window.addEventListener('scroll', () => {
+      const header = document.querySelector('her');
+      if (window.scrollY > 100) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    });
+
+    // ===== Scroll Animations =====
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('animated');
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.animate-on-scroll').forEach(el => {
+      observer.observe(el);
+    });
+
+    // ===== Hero Carousel =====
+    let slideIndex = 0;
+    const slides = document.querySelectorAll('.hero-slide');
+    
+    function nextSlide() {
+      slides.forEach(s => s.classList.remove('active'));
+      slideIndex = (slideIndex + 1) % slides.length;
+      slides[slideIndex].classList.add('active');
+    }
+    
+    // Auto-advance slides
+    setInterval(nextSlide, 6000);
+    
+    // Preload images for smoother transitions
+    slides.forEach(slide => {
+      const img = new Image();
+      img.src = slide.style.backgroundImage.slice(5, -2);
+    });
+
+    // ===== Page Routing =====
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(link.dataset.page).classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        // Re-trigger scroll animations for new page
+        setTimeout(() => {
+          document.querySelectorAll('.animate-on-scroll').forEach(el => {
+            observer.observe(el);
+          });
+        }, 100);
+      });
+    });
+
+    // ===== Smooth Scroll for Internal Links =====
+    document.querySelectorAll('a[href^="#"]').forEach(link => {
+      link.addEventListener('click', e => {
+        const targetId = link.getAttribute('href').substring(1);
+        const targetElement = document.getElementById(targetId);
+        
+        if (targetElement && targetId !== 'home' && targetId !== 'about' && targetId !== 'products') {
+          e.preventDefault();
+          targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
+    // ===== Pricing Toggle =====
+    document.querySelectorAll('.toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const content = document.getElementById('pricingContent');
+        if (btn.dataset.type === 'packages') {
+          content.innerHTML = `
+            <div class="price-card popular">
+              <div class="price-header"><h3>🎓 Student Proposal Package – K300</h3></div>
+              <ul class="price-list">
+                <li>✓ Topic selection</li>
+                <li>✓ Research gap</li>
+                <li>✓ Problem statement</li>
+                <li>✓ Objectives & questions</li>
+                <li>✓ Full proposal draft</li>
+                <li><strong>Best for: Students starting their project</strong></li>
+              </ul>
+            </div>
+            <div class="price-card">
+              <div class="price-header"><h3>🏆 Final Year Project Package – K650</h3></div>
+              <ul class="price-list">
+                <li>✓ Proposal (power point)</li>
+                <li>✓ Questionnaire or interview guide</li>
+                <li>✓ Full report review & editing</li>
+                <li>✓ Defense slides (final presentation)</li>
+                <li><strong>Complete Research Package</strong></li>
+              </ul>
+            </div>
+          `;
+        } else {
+          content.innerHTML = `
+            <div class="price-card">
+              <div class="price-header"><h3>1. Topic & Proposal Support</h3></div>
+              <ul class="price-list">
+                <li>• Topic Selection + Research Gap Identification: <strong>K80 – K120</strong></li>
+                <li>• Full Proposal Writing (Chapters 1–3): <strong>K250 – K400</strong></li>
+                <li>• Proposal Review & Improvement: <strong>K100 – K180</strong></li>
+                <li>• Problem Statement + Objectives + Questions (Bundle): <strong>K70 – K120</strong></li>
+              </ul>
+            </div>
+            <div class="price-card">
+              <div class="price-header"><h3>2. Literature Review</h3></div>
+              <ul class="price-list">
+                <li>• Literature Review Writing (8–15 pages): <strong>K200 – K350</strong></li>
+                <li>• Article Search & Compilation (10–20 articles): <strong>K60 – K120</strong></li>
+              </ul>
+            </div>
+            <div class="price-card">
+              <div class="price-header"><h3>3. Data Collection Tools</h3></div>
+              <ul class="price-list">
+                <li>• Questionnaire Design: <strong>K80 – K150</strong></li>
+                <li>• Interview Guide Development: <strong>K50 – K90</strong></li>
+              </ul>
+            </div>
+            <div class="price-card">
+              <div class="price-header"><h3>4. Data Analysis</h3></div>
+              <ul class="price-list">
+                <li>• Basic Excel Analysis (tables + graphs + interpretation): <strong>K150 – K250</strong></li>
+                <li>• SPSS Basic Output Interpretation: <strong>K120 – K200</strong></li>
+                <li><small>(Choose based on your skill level; we can adjust later.)</small></li>
+              </ul>
+            </div>
+            <div class="price-card">
+              <div class="price-header"><h3>5. Full Research Report (Ch 1–5)</h3></div>
+              <ul class="price-list">
+                <li>• Full Writing (Student provides data): <strong>K450 – K700</strong></li>
+                <li>• Full Review & Editing (Student already wrote draft): <strong>K200 – K350</strong></li>
+              </ul>
+            </div>
+            <div class="price-card">
+              <div class="price-header"><h3>6. Editing & Academic Cleanup</h3></div>
+              <ul class="price-list">
+                <li>• Editing + Proofreading (per full project): <strong>K150 – K250</strong></li>
+                <li>• Grammar correction + paragraph improvement: <strong>K50 – K120</strong></li>
+              </ul>
+            </div>
+            <div class="price-card">
+              <div class="price-header"><h3>7. Plagiarism Support</h3></div>
+              <ul class="price-list">
+                <li>• Turnitin Check Only: <strong>K30 – K50</strong></li>
+                <li>• Turnitin Reduction (Rewrite + Improve): <strong>K80 – K150</strong></li>
+              </ul>
+            </div>
+            <div class="price-card">
+              <div class="price-header"><h3>8. Formatting Services</h3></div>
+              <ul class="price-list">
+                <li>• APA / Harvard / MLA / Chicago Formatting: <strong>K50 – K80</strong></li>
+                <li>• Table of Contents + Numbering + References Cleanup: <strong>K40 – K70</strong></li>
+              </ul>
+            </div>
+            <div class="price-card">
+              <div class="price-header"><h3>9. Presentation Preparation</h3></div>
+              <ul class="price-list">
+                <li>• Proposal Defense Slides (10–15 slides): <strong>K80 – K120</strong></li>
+                <li>• Dissertation Defense Slides (15–20 slides): <strong>K100 – K150</strong></li>
+                <li>• Presentation Script / Talking Points: <strong>K50 – K80</strong></li>
+              </ul>
+            </div>
+            <div class="price-card">
+              <div class="price-header"><h3>10. Training & Tutorials</h3></div>
+              <ul class="price-list">
+                <li>• How to Write a Proposal (1 Hour Session): <strong>K50</strong></li>
+                <li>• How to Identify Research Gaps: <strong>K40</strong></li>
+                <li>• How to Do a Literature Review: <strong>K40</strong></li>
+              </ul>
+            </div>
+            <div class="price-card">
+              <div class="price-header"><h3>11. Extra Student Services</h3></div>
+              <ul class="price-list">
+                <li>• CV Writing: <strong>K50 – K100</strong></li>
+                <li>• Motivation Letter / Personal Statement: <strong>K40 – K80</strong></li>
+              </ul>
+            </div>
+          `;
+        }
+      });
+    });
+
+    // ===== Contact Form =====
+    document.getElementById('contactForm').addEventListener('submit', e => {
+      e.preventDefault();
+      alert('✅ Message sent! We’ll reply within 24 hours via WhatsApp or email.');
+      // Send to WhatsApp
+      const name = document.getElementById('name').value;
+      const contact = document.getElementById('contact').value;
+      const service = document.getElementById('service').value;
+      const message = document.getElementById('message').value;
+      
+      const wa = '260979064957';
+      let msg = `Hello Legacies ARS,\n\n`;
+      msg += `New inquiry from: ${name}\n`;
+      msg += `Contact: ${contact}\n\n`;
+      
+      if (service) {
+        msg += `Service of Interest: ${service}\n\n`;
+      }
+      
+      msg += `Message:\n${message}\n\n`;
+      msg += `Please get back to me with pricing and availability. Thank you!`;
+      
+      window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, '_blank');
+      
+      e.target.reset();
+    });
+
+    // ===== Products Data (Updated to match exact pricing structure) =====
+    const services = [
+      // Category 1: Research Support
+      { name: "Topic Selection & Refinement", price: 100, desc: "K80 – K120", cat: "Research Support" },
+      { name: "Research Gap Identification", price: 90, desc: "Included in topic selection", cat: "Research Support" },
+      { name: "Problem Statement Development", price: 80, desc: "K70 – K120 (Bundle)", cat: "Research Support" },
+      { name: "Objectives & Research Questions", price: 85, desc: "K70 – K120 (Bundle)", cat: "Research Support" },
+      { name: "Full Proposal Writing (Ch 1–3)", price: 325, desc: "K250 – K400", cat: "Research Support" },
+      { name: "Proposal Review & Improvement", price: 140, desc: "K100 – K180", cat: "Research Support" },
+
+      // Category 2: Literature Review Services
+      { name: "Literature Review Writing (8–15p)", price: 275, desc: "K200 – K350", cat: "Literature Review Services" },
+      { name: "Article Search & Summary", price: 90, desc: "K60 – K120 (10–20 articles)", cat: "Literature Review Services" },
+      { name: "Conceptual/Theoretical Framework", price: 200, desc: "Included in lit review", cat: "Literature Review Services" },
+      { name: "Key Themes & Trends Identification", price: 150, desc: "Included in lit review", cat: "Literature Review Services" },
+
+      // Category 3: Data Collection Tools
+      { name: "Questionnaire Development", price: 115, desc: "K80 – K150", cat: "Data Collection Tools" },
+      { name: "Interview Guide Creation", price: 70, desc: "K50 – K90", cat: "Data Collection Tools" },
+      { name: "Focus Group Discussion Tools", price: 100, desc: "K80 – K130", cat: "Data Collection Tools" },
+      { name: "Sampling Guidance", price: 60, desc: "K50 – K80", cat: "Data Collection Tools" },
+
+      // Category 4: Data Analysis Assistance
+      { name: "Excel-based Analysis", price: 200, desc: "K150 – K250 (tables, graphs, interpretation)", cat: "Data Analysis Assistance" },
+      { name: "SPSS Output Interpretation", price: 160, desc: "K120 – K200", cat: "Data Analysis Assistance" },
+      { name: "Results & Discussion Writing", price: 250, desc: "K200 – K300", cat: "Data Analysis Assistance" },
+
+      // Category 5: Full Research Report Support
+      { name: "Writing & Editing Chapters 1–5", price: 575, desc: "K450 – K700 (Student provides data)", cat: "Full Research Report Support" },
+      { name: "Project Review & Improvement", price: 275, desc: "K200 – K350 (Student wrote draft)", cat: "Full Research Report Support" },
+      { name: "Findings & Conclusions", price: 200, desc: "Included in full report", cat: "Full Research Report Support" },
+      { name: "Report Structuring & Organization", price: 150, desc: "Included in full report", cat: "Full Research Report Support" },
+
+      // Category 6: Editing & Proofreading
+      { name: "Grammar Correction", price: 85, desc: "K50 – K120", cat: "Editing & Proofreading" },
+      { name: "Sentence Improvement", price: 100, desc: "K70 – K130", cat: "Editing & Proofreading" },
+      { name: "Logical Flow & Clarity", price: 120, desc: "K90 – K150", cat: "Editing & Proofreading" },
+      { name: "Cohesion & Coherence Review", price: 200, desc: "K150 – K250 (full project)", cat: "Editing & Proofreading" },
+
+      // Category 7: Plagiarism & Academic Integrity
+      { name: "Plagiarism Check (Turnitin)", price: 40, desc: "K30 – K50", cat: "Plagiarism & Academic Integrity" },
+      { name: "Plagiarism Reduction & Rewriting", price: 115, desc: "K80 – K150", cat: "Plagiarism & Academic Integrity" },
+      { name: "Proper Paraphrasing & Citation", price: 90, desc: "K70 – K110", cat: "Plagiarism & Academic Integrity" },
+      { name: "Reference List Cleanup", price: 55, desc: "K40 – K70", cat: "Plagiarism & Academic Integrity" },
+
+      // Category 8: Formatting Services
+      { name: "APA/Harvard/MLA/Chicago", price: 65, desc: "K50 – K80", cat: "Formatting Services" },
+      { name: "Referencing & In-text Citation", price: 60, desc: "K45 – K75", cat: "Formatting Services" },
+      { name: "Table of Contents", price: 45, desc: "K35 – K55", cat: "Formatting Services" },
+      { name: "Numbering, Alignment, Layout", price: 55, desc: "K40 – K70", cat: "Formatting Services" },
+
+      // Category 9: Presentation Preparation
+      { name: "Proposal Defense Slides", price: 100, desc: "K80 – K120 (10–15 slides)", cat: "Presentation Preparation" },
+      { name: "Dissertation Defense Slides", price: 125, desc: "K100 – K150 (15–20 slides)", cat: "Presentation Preparation" },
+      { name: "Presentation Script/Talking Points", price: 65, desc: "K50 – K80", cat: "Presentation Preparation" },
+      { name: "Academic Poster Design", price: 90, desc: "K70 – K110", cat: "Presentation Preparation" },
+
+      // Category 10: Student Career Support
+      { name: "CV Writing & Redesign", price: 75, desc: "K50 – K100", cat: "Student Career Support" },
+      { name: "Personal Statements", price: 60, desc: "K40 – K80", cat: "Student Career Support" },
+      { name: "Motivation Letters", price: 60, desc: "K40 – K80 (jobs, scholarships)", cat: "Student Career Support" },
+      { name: "Internship & Application Guidance", price: 70, desc: "K50 – K90", cat: "Student Career Support" },
+
+      // Category 11: Training & Coaching
+      { name: "Proposal Writing Coaching", price: 50, desc: "K50 (1 hour session)", cat: "Training & Coaching" },
+      { name: "How to Write Literature Review", price: 40, desc: "K40", cat: "Training & Coaching" },
+      { name: "How to Prepare Questionnaire", price: 40, desc: "K40", cat: "Training & Coaching" },
+      { name: "One-on-One Academic Writing", price: 60, desc: "K50 – K70 per hour", cat: "Training & Coaching" },
+
+      // Category 12: Additional Student Services
+      { name: "Assignment Writing Support", price: 100, desc: "K80 – K120", cat: "Additional Student Services" },
+      { name: "Document Review for Clarity", price: 80, desc: "K60 – K100", cat: "Additional Student Services" },
+      { name: "PowerPoint Design", price: 70, desc: "K50 – K90", cat: "Additional Student Services" },
+      { name: "Academic Portfolio Preparation", price: 120, desc: "K90 – K150", cat: "Additional Student Services" },
+    ];
+
+    // Render products by category
+    const grid = document.getElementById('productsGrid');
+    const grouped = services.reduce((acc, s) => {
+      if (!acc[s.cat]) acc[s.cat] = [];
+      acc[s.cat].push(s);
+      return acc;
+    }, {});
+    
+    let html = '';
+    Object.entries(grouped).forEach(([cat, items]) => {
+      html += `<div style="margin-bottom: 2.5rem;"><h3 style="color: var(--primary); margin-bottom: 1rem; border-left: 4px solid var(--secondary); padding-left: 0.75rem;">${cat}</h3><div class="products-grid">`;
+      items.forEach(s => {
+        html += `
+          <div class="product-card">
+            <div class="product-img">${cat}</div>
+            <div class="card-body">
+              <h3>${s.name}</h3>
+              <p style="font-size:0.95rem;color:var(--gray);margin:0.5rem 0;">${s.desc}</p>
+              <div style="text-align:center;margin:1rem 0;">
+                <button class="add-inquiry" data-name="${s.name}" 
+                        style="background:var(--secondary);color:white;border:none;padding:0.6rem 1.5rem;border-radius:25px;font-weight:600;cursor:pointer;transition:all 0.3s ease;">
+                  Add to Inquiry
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      html += '</div></div>';
+    });
+    grid.innerHTML = html;
+
+    // ===== Inquiry System =====
+    let inquiryList = JSON.parse(localStorage.getItem('legaciesInquiry')) || [];
+
+    function updateInquiry() {
+      const badge = document.getElementById('cartBadge');
+      const list = document.getElementById('cartItemsList');
+      const btn = document.getElementById('checkoutBtn');
+
+      localStorage.setItem('legaciesInquiry', JSON.stringify(inquiryList));
+      badge.textContent = inquiryList.length || '';
+
+      if (inquiryList.length === 0) {
+        list.innerHTML = `<div style="padding:2rem;text-align:center;color:var(--gray);">📋 Your inquiry list is empty.<br><small>Add services to inquire about.</small></div>`;
+        btn.disabled = true;
+        return;
+      }
+
+      let itemsHtml = '';
+      inquiryList.forEach((item, i) => {
+        itemsHtml += `
+          <div style="background:#f8f9fa;border-radius:8px;padding:1rem;margin-bottom:0.5rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div style="font-weight:600;color:var(--primary);">${item.name}</div>
+                <div style="font-size:0.9rem;color:var(--gray);margin-top:0.25rem;">${item.category}</div>
+              </div>
+              <button class="inquiry-rm" data-i="${i}" style="color:#dc3545;background:none;border:none;font-weight:bold;font-size:1.2rem;cursor:pointer;">✕</button>
+            </div>
+          </div>
+        `;
+      });
+
+      list.innerHTML = itemsHtml;
+      btn.disabled = false;
+    }
+
+    // Add to inquiry
+    grid.addEventListener('click', e => {
+      if (e.target.classList.contains('add-inquiry')) {
+        const name = e.target.dataset.name;
+        const service = services.find(s => s.name === name);
+        const existing = inquiryList.find(i => i.name === name);
+        
+        if (!existing) {
+          inquiryList.push({ 
+            name: service.name, 
+            category: service.cat,
+            desc: service.desc 
+          });
+          updateInquiry();
+          
+          // Visual feedback
+          e.target.textContent = 'Added ✓';
+          e.target.style.background = '#28a745';
+          setTimeout(() => {
+            e.target.textContent = 'Add to Inquiry';
+            e.target.style.background = 'var(--secondary)';
+          }, 1500);
+        }
+      }
+    });
+
+    // Inquiry interactions
+    document.getElementById('cartSidebar').addEventListener('click', e => {
+      const i = e.target.dataset.i;
+      if (i !== undefined && e.target.classList.contains('inquiry-rm')) {
+        inquiryList.splice(i, 1);
+        updateInquiry();
+      }
+    });
+
+    // Inquiry toggle
+    document.getElementById('openCartBtn').onclick = () => document.getElementById('cartSidebar').style.right = '0';
+    document.getElementById('closeCartBtn').onclick = () => document.getElementById('cartSidebar').style.right = '-400px';
+    document.addEventListener('click', e => {
+      const sidebar = document.getElementById('cartSidebar');
+      if (window.innerWidth > 768 && sidebar.style.right === '0px' && 
+          !sidebar.contains(e.target) && e.target.id !== 'openCartBtn') {
+        sidebar.style.right = '-400px';
+      }
+    });
+
+    // WhatsApp Inquiry
+    document.getElementById('checkoutBtn').onclick = () => {
+      const wa = '260979064957';
+      let msg = `Hello Legacies ARS,\n\nI’d like to order:\n`;
+      cart.forEach(i => msg += `✅ ${i.name} (×${i.qty}) — K${i.price} → K${(i.price*i.qty).toFixed(0)}\n`);
+      
+      const sub = cart.reduce((s, i) => s + i.price*i.qty, 0);
+      const discPct = cart.length >= 5 ? 8 : (cart.length >= 3 ? 5 : 0);
+      const disc = (discPct/100)*sub;
+      const total = sub - disc;
+      
+      msg += `\n💰 Subtotal: K${sub.toFixed(0)}`;
+      if (disc > 0) msg += `\n🎁 Bundle Bonus (${discPct}%): –K${disc.toFixed(0)}`;
+      msg += `\n✨ **Total: K${total.toFixed(0)}**\n\nPlease confirm availability, delivery time, and payment options. Thank you!`;
+      
+      window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, '_blank');
+    };
+
+    // Override checkout button for inquiry system
+    setTimeout(() => {
+      document.getElementById('checkoutBtn').onclick = () => {
+        const wa = '260979064957';
+        let msg = `Hello Legacies ARS,\n\nI would like to inquire about the following services:\n\n`;
+        
+        inquiryList.forEach((item, index) => {
+          msg += `${index + 1}. ${item.name}\n   Category: ${item.category}\n\n`;
+        });
+        
+        msg += `Please provide me with:\n`;
+        msg += `• Detailed pricing for each service\n`;
+        msg += `• Availability and timeline\n`;
+        msg += `• Payment options\n`;
+        msg += `• Any package deals available\n\n`;
+        msg += `Thank you for your time. I look forward to hearing from you.`;
+        
+        window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, '_blank');
+      };
+    }, 100);
+
+    // Fix button icon
+    document.getElementById('openCartBtn').innerHTML = '<span id="cartBadge">0</span> 📋';
+    
+    // Init
+    updateInquiry();
+  </script>
+
+</body>
+</html>
